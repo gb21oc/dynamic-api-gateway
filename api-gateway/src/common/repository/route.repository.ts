@@ -1,12 +1,36 @@
+import { Like } from "typeorm";
 import { AppDataSource } from "../../config/typeORM.config";
 import { RouteEntity } from "../../entity/route.entity";
-import { RouteEntityDTO } from "../../routes/create-routes/DTO/body.DTO";
+import { RouteEntityDTO } from "../../routes/config-routes-dynamic/DTO/body.DTO";
+import { IConfigRoutesDynamic } from "../interface/routes/configRoutesDynamic.interface";
 
 export class RouteRepository{
     private readonly repository = AppDataSource.getRepository(RouteEntity)
 
     async findAll(){
         return await this.repository.find()
+    }
+
+    async findById(id: number){
+        return await this.repository.find({
+            where: {
+                id: id
+            }
+        })
+    }
+
+    async deleteById(id: number){
+        return await this.repository.delete({id: id})
+    }
+
+    async findByPathAndMethodLikeMicroService(path: string, method: IConfigRoutesDynamic.METHOD, ms: string){
+        return await this.repository.find({
+            where: {
+                path: path,
+                method: method,
+                micro_service: Like(`%${ms}%`)
+            }
+        })
     }
 
     async insert(payload: RouteEntityDTO){ // ! Fazer conversao de object para string, basta utilizar JSON.stringify
