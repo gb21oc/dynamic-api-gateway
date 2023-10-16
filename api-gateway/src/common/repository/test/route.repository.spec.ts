@@ -9,7 +9,7 @@ import { RouteRepository } from '../route.repository';
 import { it, describe, beforeAll, afterAll, jest, expect } from '@jest/globals';
 import { AppDataSource } from '../../../config/typeORM.config';
 import { repositoryMOCK } from "../../../../test/mock/repository.mock";
-import { RouteEntityDTO } from "../../../routes/create-routes/DTO/body.DTO";
+import { RouteEntityDTO } from "../../../routes/config-routes-dynamic/DTO/body.DTO";
 
 
 describe("Route Repository", () => {
