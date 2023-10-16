@@ -4,6 +4,7 @@ import { IMyExpress } from "../../common/interface/express.interface";
 import { IMicroService } from "../../common/interface/microService.interface";
 import { RouteRepository } from "../../common/repository/route.repository";
 import { MicroServiceDTO, RouteEntityDTO } from "./DTO/body.DTO";
+import { IConfigRoutesDynamic } from "../../common/interface/routes/configRoutesDynamic.interface";
 
 export class ConfigRoutesDynamicService{
     private readonly repository = new RouteRepository()
@@ -22,7 +23,7 @@ export class ConfigRoutesDynamicService{
 
     setRoutesInTerminalLog(router: Router){
         const stack = router.stack as IMyExpress.Layer[]
-        this.serviceShared.viewRoutesCreated(stack)
+        this.serviceShared.viewRoutesCreated(stack, "ConfigRoutesDynamicController")
     }
 
     async validateBody(body: RouteEntityDTO): Promise<IMicroService.Response | undefined>{
@@ -76,8 +77,9 @@ export class ConfigRoutesDynamicService{
     async createRoute(body: object): Promise<IMicroService.Response>{
         const bodyDTO = new RouteEntityDTO(body)
         const bodyValidate = await this.validateBody(bodyDTO)
-        const isExistsPath = await this.repository.findByPathAndMethodLikeMicroService(bodyDTO.path, bodyDTO.method, bodyDTO.micro_service.pattern)
-        if(bodyValidate || isExistsPath){
+        const method = bodyDTO.method as IConfigRoutesDynamic.METHOD
+        const isExistsPath = await this.repository.findByPathAndMethodLikeMicroService(bodyDTO.path, method, bodyDTO.micro_service.pattern)
+        if(bodyValidate || isExistsPath.length > 0){
             return bodyValidate ?? {
                 statusCode: 400,
                 message: "Route already created",
@@ -106,7 +108,7 @@ export class ConfigRoutesDynamicService{
             if(isDeleted.affected === 1){
                 return {
                     statusCode: 200,
-                    message: "OK",
+                    message: "The route will be deleted in 5 minutes",
                     error: null
                 }
             }
