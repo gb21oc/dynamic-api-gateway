@@ -13,8 +13,7 @@ export namespace IService{
 
     export interface GetQueryOrParam{
         req: Request
-        existsQueryParametersInUrl: boolean,
-        existsParametersInUrl: boolean
+        parameters: object
         queryParameters: object
     }
 }
