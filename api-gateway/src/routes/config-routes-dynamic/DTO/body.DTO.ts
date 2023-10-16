@@ -40,7 +40,7 @@ export class RouteEntityDTO implements IConfigRoutesDynamic.OmitIDRouteEntity{
 
     @IsNotEmpty()
     @IsEnum(IConfigRoutesDynamic.METHOD)
-    method: IConfigRoutesDynamic.METHOD;
+    method: "GET" | "POST" | "DELETE" | "PUT" | "PATCH";
 
     @IsDefined()
     @IsObject({
@@ -53,16 +53,15 @@ export class RouteEntityDTO implements IConfigRoutesDynamic.OmitIDRouteEntity{
 
     @IsObject()
     @IsOptional()
-    queryParameters: object;
+    queryParameters?: object;
 
     @IsObject()
     @IsOptional()
-    parameters: object;
+    parameters?: object;
 
     @IsEnum(IConfigRoutesDynamic.Body)
     @IsNotEmpty()
-    isBody: IConfigRoutesDynamic.Body;
-
+    isBody: "0" | "1";
     /**
      *
      */
