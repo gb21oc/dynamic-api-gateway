@@ -4,15 +4,31 @@ import { IMyExpress } from "../../common/interface/express.interface";
 import { IMicroService } from "../../common/interface/microService.interface";
 import { RouteRepository } from "../../common/repository/route.repository";
 import { MicroServiceDTO, RouteEntityDTO } from "./DTO/body.DTO";
-import { ValidationPipe } from "@nestjs/common";
 
 export class ConfigRoutesDynamicService{
     private readonly repository = new RouteRepository()
     private readonly serviceShared = new ServiceShared()
 
+    private async createNewRoute(body: RouteEntityDTO){
+        const isCreated = await this.repository.insert(body)
+        if(isCreated && Object.keys(isCreated).length > 0){
+            return {
+                statusCode: 201,
+                message: "OK",
+                error: null
+            }
+        }
+    }
+
     setRoutesInTerminalLog(router: Router){
         const stack = router.stack as IMyExpress.Layer[]
         this.serviceShared.viewRoutesCreated(stack)
+    }
+
+    async validateBody(body: RouteEntityDTO): Promise<IMicroService.Response | undefined>{
+        const bodyValidate = await this.serviceShared.validatePayloadDTO(body)
+        const fieldMicroService = await this.serviceShared.validatePayloadDTO(new MicroServiceDTO(body.micro_service))
+        if(bodyValidate || fieldMicroService) return bodyValidate as IMicroService.Response ?? fieldMicroService as IMicroService.Response
     }
     
     async getAll(){
@@ -59,20 +75,50 @@ export class ConfigRoutesDynamicService{
 
     async createRoute(body: object): Promise<IMicroService.Response>{
         const bodyDTO = new RouteEntityDTO(body)
-        const bodyValidate = await this.serviceShared.validatePayloadDTO(bodyDTO)
-        const fieldMicroService = await this.serviceShared.validatePayloadDTO(new MicroServiceDTO(bodyDTO.micro_service))
-        if(bodyValidate || fieldMicroService) return bodyValidate as IMicroService.Response ?? fieldMicroService as IMicroService.Response
-        const isCreated = await this.repository.insert(bodyDTO)
-        if(isCreated && Object.keys(isCreated).length > 0){
+        const bodyValidate = await this.validateBody(bodyDTO)
+        const isExistsPath = await this.repository.findByPathAndMethodLikeMicroService(bodyDTO.path, bodyDTO.method, bodyDTO.micro_service.pattern)
+        if(bodyValidate || isExistsPath){
+            return bodyValidate ?? {
+                statusCode: 400,
+                message: "Route already created",
+                error: null
+            }
+        }
+        const isCreated = await this.createNewRoute(bodyDTO)
+        return isCreated ?? {
+            statusCode: 400,
+            message: "Route not created",
+            error: null
+        }
+    }
+
+    async deleteRoute(id: string): Promise<IMicroService.Response>{
+        if(isNaN(Number(id))){
             return {
-                statusCode: 201,
-                message: "OK",
+                statusCode: 400,
+                message: "Id is number!",
+                error: null
+            }
+        }
+        const data = await this.repository.findById(Number(id))
+        if(data.length == 1){
+            const isDeleted = await this.repository.deleteById(Number(id))
+            if(isDeleted.affected === 1){
+                return {
+                    statusCode: 200,
+                    message: "OK",
+                    error: null
+                }
+            }
+            return {
+                statusCode: 400,
+                message: "Unable to delete route",
                 error: null
             }
         }
         return {
-            statusCode: 400,
-            message: "Route not created",
+            statusCode: 404,
+            message: "Route not exists",
             error: null
         }
     }

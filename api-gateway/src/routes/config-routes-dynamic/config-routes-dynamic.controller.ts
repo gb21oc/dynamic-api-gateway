@@ -19,6 +19,11 @@ router.post("/", async (req, res) => {
     return res.status(data.statusCode).json(data)
 })
 
+router.delete("/:id", async (req: Request, res: Response) => {
+    const data = await configRoutesDynamicService.deleteRoute(req.params.id)
+    return res.status(data.statusCode).json(data)
+})
+
 configRoutesDynamicService.setRoutesInTerminalLog(router)
 
 export const configDynamicRouter = router
