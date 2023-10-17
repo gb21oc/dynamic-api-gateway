@@ -5,12 +5,13 @@ import { IMicroService } from "../../common/interface/microService.interface";
 import { RouteRepository } from "../../common/repository/route.repository";
 import { MicroServiceDTO, RouteEntityDTO } from "./DTO/body.DTO";
 import { IConfigRoutesDynamic } from "../../common/interface/routes/configRoutesDynamic.interface";
+import { IService } from "../../common/interface/service.interface";
 
 export class ConfigRoutesDynamicService{
     private readonly repository = new RouteRepository()
     private readonly serviceShared = new ServiceShared()
 
-    private async createNewRoute(body: RouteEntityDTO){
+    private async createNewRoute(body: RouteEntityDTO): Promise<IMicroService.Response | undefined>{
         const isCreated = await this.repository.insert(body)
         if(isCreated && Object.keys(isCreated).length > 0){
             return {
@@ -18,6 +19,17 @@ export class ConfigRoutesDynamicService{
                 message: "OK",
                 error: null
             }
+        }
+    }
+
+    private validateLogicCreateRoute(body: RouteEntityDTO): IService.Errors | undefined{
+        if(body.isBody === "1" && (body.method === "DELETE" || body.method === "GET")){
+           return {
+                    property: "isBody",
+                    errors: [
+                        "isBody it is not possible to use body for 'DELETE' and 'GET' methods"
+                    ]
+                }
         }
     }
 
@@ -78,14 +90,20 @@ export class ConfigRoutesDynamicService{
         const bodyDTO = new RouteEntityDTO(body)
         const bodyValidate = await this.validateBody(bodyDTO)
         const method = bodyDTO.method as IConfigRoutesDynamic.METHOD
-        const isExistsPath = await this.repository.findByPathAndMethodLikeMicroService(bodyDTO.path, method, bodyDTO.micro_service.pattern)
-        if(bodyValidate || isExistsPath.length > 0){
+        const validateBodyAndMethod = this.validateLogicCreateRoute(bodyDTO)
+        const isExistsRoute = await this.repository.findByPathAndMethodLikeMicroService(bodyDTO.path, method, bodyDTO.micro_service.pattern)
+        if(bodyValidate || isExistsRoute.length > 0){
             return bodyValidate ?? {
                 statusCode: 400,
                 message: "Route already created",
                 error: null
             }
         }
+        else if(validateBodyAndMethod) return {
+            statusCode: 400,
+            message: "",
+            error: validateBodyAndMethod
+        } 
         const isCreated = await this.createNewRoute(bodyDTO)
         return isCreated ?? {
             statusCode: 400,

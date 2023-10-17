@@ -1,24 +1,29 @@
-import { IsDefined, IsEnum, IsNotEmpty, IsNotEmptyObject, IsNumber, IsObject, IsOptional, IsString, ValidateNested } from "class-validator";
+import { IsDefined, IsEnum, IsNotEmpty, IsNotEmptyObject, IsNumber, IsObject, IsOptional, IsString, Max, Min, Validate, ValidateNested } from "class-validator";
 import { IConfigRoutesDynamic } from "../../../common/interface/routes/configRoutesDynamic.interface";
-import { Transform, Type } from "class-transformer";
+import { Type } from "class-transformer";
+import { ValidateFieldsIsNotEmpty } from "../../../common/helpers/pipe/validateFieldIsNotEmpty.pipe";
 
 export class MicroServiceDTO{
+    
+    @Validate(ValidateFieldsIsNotEmpty, {
+        message: "host is not empty!"
+    })
     @IsString()
     @IsNotEmpty()
-    @Transform(v => {
-        return v.value.toString().trim()
-    })
     host: string
 
+    @Min(1)
+    @Max(65535)
     @IsNumber()
     @IsNotEmpty()
     port: number
 
+    
+    @Validate(ValidateFieldsIsNotEmpty, {
+        message: "pattern is not empty!"
+    })
     @IsString()
     @IsNotEmpty()
-    @Transform(v => {
-        return v.value.toString().trim().toLowerCase()
-    })
     pattern: string
 
     /**
@@ -31,11 +36,12 @@ export class MicroServiceDTO{
 }
 
 export class RouteEntityDTO implements IConfigRoutesDynamic.OmitIDRouteEntity{
+
+    @Validate(ValidateFieldsIsNotEmpty, {
+        message: "path is not empty!"
+    })
     @IsString()
     @IsNotEmpty()
-    @Transform(v => {
-        return v.value.toString().trim().toLowerCase()
-    })
     path: string;
 
     @IsNotEmpty()
