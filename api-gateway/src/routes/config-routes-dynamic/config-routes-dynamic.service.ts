@@ -6,7 +6,6 @@ import { RouteRepository } from "../../common/repository/route.repository";
 import { MicroServiceDTO, RouteEntityDTO } from "./DTO/body.DTO";
 import { IConfigRoutesDynamic } from "../../common/interface/routes/configRoutesDynamic.interface";
 import { IService } from "../../common/interface/service.interface";
-
 export class ConfigRoutesDynamicService{
     private readonly repository = new RouteRepository()
     private readonly serviceShared = new ServiceShared()
@@ -140,6 +139,34 @@ export class ConfigRoutesDynamicService{
             statusCode: 404,
             message: "Route not exists",
             error: null
+        }
+    }
+
+    async updateRoute(id: string, payload: IConfigRoutesDynamic.BodyUpdate): Promise<IMicroService.Response>{
+        if(isNaN(Number(id))){
+            return {
+                statusCode: 400,
+                message: "Id is number!",
+                error: null
+            }
+        }
+        const actualData = await this.repository.findById(Number(id))
+        if(actualData.length === 1 && Object.keys(payload).length > 0){
+            const isUpdate = await this.repository.updateById(Number(id), payload, actualData[0])
+            return isUpdate? {
+                statusCode: 200,
+                message: "OK!",
+                error: null
+            }: {
+                statusCode: 400,
+                message: null,
+                error: "Unable to update route"  
+            }
+        }
+        return {
+            statusCode: 400,
+            message: null,
+            error: actualData.length === 0? "Route not found": "It is necessary to inform the data to be updated"
         }
     }
 }

@@ -1,4 +1,5 @@
 import { RouteEntity } from "../../../entity/route.entity";
+import { RouteEntityDTO } from "../../../routes/config-routes-dynamic/DTO/body.DTO";
 
 export namespace IConfigRoutesDynamic{
     export type OmitIDRouteEntity = Omit<RouteEntity, "id" | "micro_service" | "queryParameters" | "parameters">
@@ -15,4 +16,6 @@ export namespace IConfigRoutesDynamic{
         notExists = "0",
         exists = "1"
     }
+
+    export interface BodyUpdate extends Partial<RouteEntityDTO>{}
 }

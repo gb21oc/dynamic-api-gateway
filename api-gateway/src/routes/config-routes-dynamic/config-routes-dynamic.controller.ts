@@ -1,5 +1,6 @@
 import { Request, Response, Router } from "express"
 import { ConfigRoutesDynamicService } from "./config-routes-dynamic.service"
+import { IConfigRoutesDynamic } from "../../common/interface/routes/configRoutesDynamic.interface"
 
 const router = Router()
 const configRoutesDynamicService = new ConfigRoutesDynamicService()
@@ -21,6 +22,12 @@ router.post("/", async (req, res) => {
 
 router.delete("/:id", async (req: Request, res: Response) => {
     const data = await configRoutesDynamicService.deleteRoute(req.params.id)
+    return res.status(data.statusCode).json(data)
+})
+
+router.put("/:id", async (req: Request, res: Response) => {
+    const body: IConfigRoutesDynamic.BodyUpdate = req.body
+    const data = await configRoutesDynamicService.updateRoute(req.params.id, body)
     return res.status(data.statusCode).json(data)
 })
 
