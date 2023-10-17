@@ -13,5 +13,17 @@ const mockRouteEntity = {
 export const repositoryMOCK = {
     mockSuccessFindAll: [ mockRouteEntity ] as RouteEntity[],
     
-    mockSuccessInsertInDatabase: mockRouteEntity  as RouteEntity
+    mockSuccessInsertInDatabase: mockRouteEntity  as RouteEntity,
+
+    mockSuccessInExecutingQueryLike: [
+        {
+          id: 8,
+          path: 'new-route',
+          method: 'GET',
+          micro_service: '{"host":"localhost","port":8081,"pattern":"testNotPayload"}',
+          queryParameters: '{}',
+          parameters: '{}',
+          isBody: '0'
+        }
+    ]  as RouteEntity[]
 }
