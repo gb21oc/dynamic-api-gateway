@@ -3,6 +3,11 @@ import { Request, Response } from "express"
 export namespace IService{
     export type VerbMethods = "GET" | "POST" | "PUT" | "DELETE"
 
+    export interface Errors{
+        property: string
+        errors: string[]
+    }
+
     export interface SendToMicroService{
         host: string
         port: number
@@ -13,8 +18,7 @@ export namespace IService{
 
     export interface GetQueryOrParam{
         req: Request
-        existsQueryParametersInUrl: boolean,
-        existsParametersInUrl: boolean
+        parameters: object
         queryParameters: object
     }
 }

@@ -4,4 +4,10 @@ export namespace IMicroService{
         message: unknown,
         error: unknown
     }
+
+    export interface Conn{
+        host: string
+        port: number
+        pattern: unknown
+    }
 }
