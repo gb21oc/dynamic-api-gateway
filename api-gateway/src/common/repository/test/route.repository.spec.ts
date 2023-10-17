@@ -10,20 +10,20 @@ import { it, describe, beforeAll, afterAll, jest, expect } from '@jest/globals';
 import { AppDataSource } from '../../../config/typeORM.config';
 import { repositoryMOCK } from "../../../../test/mock/repository.mock";
 import { RouteEntityDTO } from "../../../routes/config-routes-dynamic/DTO/body.DTO";
+import { RouteEntity } from "../../../entity/route.entity";
 
 
 describe("Route Repository", () => {
     let dataSource: DataSource;
     const routeRepository = new RouteRepository()
-
-    beforeAll(async () => {
-        dataSource = await AppDataSource.initialize()
-        console.log(`[+] Database is initialize: ${dataSource.isInitialized}`) 
-    })
+    const repo = AppDataSource.getRepository(RouteEntity)
+    const sypOnFindAll = jest.spyOn(repo, "find").mockReturnValue(Promise.resolve(repositoryMOCK.mockSuccessFindAll))
+    const sypOnUpdate = jest.spyOn(repo, "update").mockReturnValue(Promise.resolve(repositoryMOCK.mockSuccessUpdate))
+    const sypOnInsert = jest.spyOn(repo, "save").mockReturnValue(Promise.resolve(repositoryMOCK.mockSuccessInsertInDatabase))
+    const sypOnDelete = jest.spyOn(repo, "delete").mockReturnValue(Promise.resolve(repositoryMOCK.mockSuccessDeleteItem))
 
     describe("Route Repository", () => {
         it("should return success object after insert dada in database", async () => {
-            const sypOnInsert = jest.spyOn(RouteRepository.prototype, "insert").mockReturnValue(Promise.resolve(repositoryMOCK.mockSuccessInsertInDatabase))
             const payload: RouteEntityDTO = {
                 path: "teste",
                 method: "GET",
@@ -36,20 +36,35 @@ describe("Route Repository", () => {
             }
             const isInserted = await routeRepository.insert(payload)
             expect(Object.keys(isInserted).length > 0).toBe(true)
-            sypOnInsert.mockClear()
-            sypOnInsert.mockRestore()
         })
 
         it("should return the data entered into the database", async () => {
-            const sypOnFindAll = jest.spyOn(RouteRepository.prototype, "findAll").mockReturnValue(Promise.resolve(repositoryMOCK.mockSuccessFindAll))
             const data = await routeRepository.findAll()
             expect(data.length > 0).toBe(true)
-            sypOnFindAll.mockClear()
-            sypOnFindAll.mockRestore()
+        })
+
+        it("should return success in update item in database", async () => {
+            const actual = await routeRepository.findById(Number(8))
+            const data = await routeRepository.updateById(8, {
+                path: "new-routeee",
+            }, actual[0])
+            expect(data?.affected).toBe(1) // { generatedMaps: [], raw: [], affected: 1 }
+        })
+
+        it("should return success in delete item in database", async () => {
+            const data = await routeRepository.deleteById(8)
+            expect(data?.affected).toBe(1)
         })
     })
 
     afterAll(async () => {
-        await dataSource.destroy()
+        sypOnFindAll.mockClear()
+        sypOnFindAll.mockRestore()
+        sypOnUpdate.mockClear()
+        sypOnUpdate.mockRestore()
+        sypOnInsert.mockClear()
+        sypOnInsert.mockRestore()
+        sypOnDelete.mockClear()
+        sypOnDelete.mockRestore()
     })
 })

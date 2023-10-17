@@ -25,5 +25,9 @@ export const repositoryMOCK = {
           parameters: '{}',
           isBody: '0'
         }
-    ]  as RouteEntity[]
+    ]  as RouteEntity[],
+
+    mockSuccessUpdate: { generatedMaps: [], raw: [], affected: 1 },
+
+    mockSuccessDeleteItem: { raw: [], affected: 1 },
 }
