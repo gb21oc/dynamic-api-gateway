@@ -45,9 +45,10 @@ describe("Route Repository", () => {
 
         it("should return success in update item in database", async () => {
             const actual = await routeRepository.findById(Number(8))
-            const data = await routeRepository.updateById(8, {
+            const itemUpdate = Object.assign(actual[0], {
                 path: "new-routeee",
-            }, actual[0])
+            })
+            const data = await routeRepository.updateById(8, itemUpdate)
             expect(data?.affected).toBe(1) // { generatedMaps: [], raw: [], affected: 1 }
         })
 

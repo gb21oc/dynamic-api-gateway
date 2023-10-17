@@ -151,8 +151,9 @@ export class ConfigRoutesDynamicService{
             }
         }
         const actualData = await this.repository.findById(Number(id))
-        if(actualData.length === 1 && Object.keys(payload).length > 0){
-            const isUpdate = await this.repository.updateById(Number(id), payload, actualData[0])
+        const newActualData = Object.assign(actualData[0], payload)
+        if(actualData.length === 1 && Object.keys(payload).length > 0 && Object.keys(newActualData).length === 7){
+            const isUpdate = await this.repository.updateById(Number(id), newActualData)
             return isUpdate? {
                 statusCode: 200,
                 message: "OK!",

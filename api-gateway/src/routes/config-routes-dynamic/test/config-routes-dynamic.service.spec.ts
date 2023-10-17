@@ -139,7 +139,7 @@ describe("Config Routes Dynamic Service", () => {
     })
 
     describe("updateRoute", () => {
-        it("", async () => {
+        it("should return sucess in update item", async () => {
             const data = await configRoutesDynamicService.updateRoute("8", {
                 path: "teste"
             })

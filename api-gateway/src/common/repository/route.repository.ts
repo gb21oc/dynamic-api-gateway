@@ -44,14 +44,7 @@ export class RouteRepository{
         return await this.repository.save(entity)
     }
 
-    async updateById(id: number, payload: IConfigRoutesDynamic.BodyUpdate, actualData: RouteEntity){
-        return await this.repository.update(id, {
-            path: payload.path ?? actualData.path,
-            method: payload.method ?? actualData.method,
-            micro_service: JSON.stringify(payload.micro_service) ?? actualData.micro_service,
-            queryParameters: JSON.stringify(payload.queryParameters) ?? actualData.queryParameters,
-            parameters: JSON.stringify(payload.parameters) ?? actualData.parameters,
-            isBody: payload.isBody ?? actualData.isBody,
-        })
+    async updateById(id: number, payload: RouteEntity){
+        return await this.repository.update(id, payload)
     }
 }
