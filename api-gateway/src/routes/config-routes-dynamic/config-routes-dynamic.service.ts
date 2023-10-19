@@ -6,18 +6,53 @@ import { RouteRepository } from "../../common/repository/route.repository";
 import { MicroServiceDTO, RouteEntityDTO } from "./DTO/body.DTO";
 import { IConfigRoutesDynamic } from "../../common/interface/routes/configRoutesDynamic.interface";
 import { IService } from "../../common/interface/service.interface";
+import { RouteEntity } from "../../entity/route.entity";
 export class ConfigRoutesDynamicService{
     private readonly repository = new RouteRepository()
     private readonly serviceShared = new ServiceShared()
+    private readonly responseJSON = {
+        successCreated:  {
+            statusCode: 201,
+            message: "OK",
+            error: null
+        },
+        successExecution: {
+            statusCode: 200,
+            message: "OK!",
+            error: null
+        },
+        errorIdIsNumber: {
+            statusCode: 400,
+            message: null,
+            error: "Id is number!"
+        },
+        errorInternalServerError: {
+            statusCode: 500,
+            message: null,
+            error: "Internal Server Error"
+        },
+        errorRouteAlreadyCreated: {
+            statusCode: 400,
+            message: null,
+            error: "Route already created"
+        },
+        errorRouteCreated: {
+            statusCode: 400,
+            message: null,
+            error: "Route not created"
+        },
+        errorRouteNotFound: {
+            statusCode: 400,
+            message: null,
+            error: "Route not found"
+        }
+        
+    }
 
     private async createNewRoute(body: RouteEntityDTO): Promise<IMicroService.Response | undefined>{
         const isCreated = await this.repository.insert(body)
         if(isCreated && Object.keys(isCreated).length > 0){
-            return {
-                statusCode: 201,
-                message: "OK",
-                error: null
-            }
+            return this.responseJSON.successCreated
         }
     }
 
@@ -60,22 +95,12 @@ export class ConfigRoutesDynamicService{
             } as IMicroService.Response
             return json
         }catch(e){
-            return {
-                statusCode: 500,
-                message: null,
-                error: "Internal Server Error"
-            } as IMicroService.Response
+            return this.responseJSON.errorInternalServerError
         }
     }
 
     async getById(id: string): Promise<IMicroService.Response>{
-        if(isNaN(Number(id))){
-            return {
-                statusCode: 400,
-                message: "Id is number!",
-                error: null
-            }
-        }
+        if(isNaN(Number(id))) return this.responseJSON.errorIdIsNumber
         const data = await this.repository.findById(Number(id))
         const json = {
             statusCode: data.length > 0? 200: 404,
@@ -92,11 +117,7 @@ export class ConfigRoutesDynamicService{
         const validateBodyAndMethod = this.validateLogicCreateRoute(bodyDTO)
         const isExistsRoute = await this.repository.findByPathAndMethodLikeMicroService(bodyDTO.path, method, bodyDTO.micro_service.pattern)
         if(bodyValidate || isExistsRoute.length > 0){
-            return bodyValidate ?? {
-                statusCode: 400,
-                message: "Route already created",
-                error: null
-            }
+            return bodyValidate ?? this.responseJSON.errorRouteAlreadyCreated
         }
         else if(validateBodyAndMethod) return {
             statusCode: 400,
@@ -104,21 +125,11 @@ export class ConfigRoutesDynamicService{
             error: validateBodyAndMethod
         } 
         const isCreated = await this.createNewRoute(bodyDTO)
-        return isCreated ?? {
-            statusCode: 400,
-            message: "Route not created",
-            error: null
-        }
+        return isCreated ?? this.responseJSON.errorRouteCreated
     }
 
     async deleteRoute(id: string): Promise<IMicroService.Response>{
-        if(isNaN(Number(id))){
-            return {
-                statusCode: 400,
-                message: "Id is number!",
-                error: null
-            }
-        }
+        if(isNaN(Number(id))) return this.responseJSON.errorIdIsNumber
         const data = await this.repository.findById(Number(id))
         if(data.length == 1){
             const isDeleted = await this.repository.deleteById(Number(id))
@@ -131,34 +142,30 @@ export class ConfigRoutesDynamicService{
             }
             return {
                 statusCode: 400,
-                message: "Unable to delete route",
-                error: null
+                message: null,
+                error: "Unable to delete route"
             }
         }
-        return {
-            statusCode: 404,
-            message: "Route not exists",
-            error: null
-        }
+        return this.responseJSON.errorRouteNotFound
     }
 
-    async updateRoute(id: string, payload: IConfigRoutesDynamic.BodyUpdate): Promise<IMicroService.Response>{
-        if(isNaN(Number(id))){
+    async updateRoute(id: string, payload: Partial<RouteEntity>): Promise<IMicroService.Response>{
+        const existsItemBeforeUpdate = await this.repository.findByLike(payload)
+        if(isNaN(Number(id))) return this.responseJSON.errorIdIsNumber
+        else if(existsItemBeforeUpdate.length > 0){
             return {
                 statusCode: 400,
-                message: "Id is number!",
-                error: null
-            }
+                message: null,
+                error: "A route with similar data already exists."
+            }   
         }
+        if(payload?.micro_service) payload.micro_service = JSON.stringify(payload.micro_service)
         const actualData = await this.repository.findById(Number(id))
+        if(actualData.length === 0) return this.responseJSON.errorRouteNotFound
         const newActualData = Object.assign(actualData[0], payload)
         if(actualData.length === 1 && Object.keys(payload).length > 0 && Object.keys(newActualData).length === 7){
             const isUpdate = await this.repository.updateById(Number(id), newActualData)
-            return isUpdate? {
-                statusCode: 200,
-                message: "OK!",
-                error: null
-            }: {
+            return isUpdate? this.responseJSON.successExecution: {
                 statusCode: 400,
                 message: null,
                 error: "Unable to update route"  
