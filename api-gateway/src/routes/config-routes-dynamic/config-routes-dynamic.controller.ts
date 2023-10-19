@@ -1,6 +1,7 @@
 import { Request, Response, Router } from "express"
 import { ConfigRoutesDynamicService } from "./config-routes-dynamic.service"
 import { IConfigRoutesDynamic } from "../../common/interface/routes/configRoutesDynamic.interface"
+import { RouteEntity } from "../../entity/route.entity"
 
 const router = Router()
 const configRoutesDynamicService = new ConfigRoutesDynamicService()
@@ -26,7 +27,7 @@ router.delete("/:id", async (req: Request, res: Response) => {
 })
 
 router.put("/:id", async (req: Request, res: Response) => {
-    const body: IConfigRoutesDynamic.BodyUpdate = req.body
+    const body: Partial<RouteEntity> = req.body
     const data = await configRoutesDynamicService.updateRoute(req.params.id, body)
     return res.status(data.statusCode).json(data)
 })

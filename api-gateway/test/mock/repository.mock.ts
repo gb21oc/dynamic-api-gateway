@@ -1,7 +1,7 @@
 import { RouteEntity } from "../../src/entity/route.entity";
 
 const mockRouteEntity = {
-    path: 'testeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee',
+    path: 'teste',
     method: 'GET',
     micro_service: '{"host":"localhost","port":8081,"pattern":"testNotPayload"}',
     queryParameters: '{}',
@@ -29,5 +29,5 @@ export const repositoryMOCK = {
 
     mockSuccessUpdate: { generatedMaps: [], raw: [], affected: 1 },
 
-    mockSuccessDeleteItem: { raw: [], affected: 1 },
+    mockSuccessDeleteItem: { raw: [], affected: 1 }
 }
