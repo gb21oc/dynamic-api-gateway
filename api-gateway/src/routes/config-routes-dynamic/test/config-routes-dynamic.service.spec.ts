@@ -4,14 +4,13 @@ import * as dotenv from "dotenv"
 const path = resolve(__dirname, `../../../../.${process.env.NODE_ENV}.env`)
 dotenv.config({path: path})
 
-import { it, describe, jest, expect, beforeAll, afterAll } from '@jest/globals';
+import { it, describe, jest, expect, afterAll } from '@jest/globals';
 import { ConfigRoutesDynamicService } from "../config-routes-dynamic.service";
 import { repositoryMOCK } from "../../../../test/mock/repository.mock";
 import { RouteRepository } from "../../../common/repository/route.repository";
 import { RouteEntityDTO } from "../DTO/body.DTO";
 import { IMicroService } from "../../../common/interface/microService.interface";
 import { configRoutesDynamicServiceMOCK } from "../../../../test/mock/config-routes-dynamic.service.mock";
-import { DataSource } from "typeorm";
 import { AppDataSource } from "../../../config/typeORM.config";
 import { IConfigRoutesDynamic } from "../../../common/interface/routes/configRoutesDynamic.interface";
 import { RouteEntity } from "../../../entity/route.entity";
@@ -105,12 +104,9 @@ describe("Config Routes Dynamic Service", () => {
         }
 
         it("should return success in created route", async () => {
-            const sypOnInsert = jest.spyOn(RouteRepository.prototype, "insert").mockReturnValue(Promise.resolve(repositoryMOCK.mockSuccessInsertInDatabase))
             const sypOnLike = jest.spyOn(RouteRepository.prototype, "findByPathAndMethodLikeMicroService").mockReturnValue(Promise.resolve([]))
             const data = await configRoutesDynamicService.createRoute(body)
             expect(data).toMatchObject(configRoutesDynamicServiceMOCK.mockSuccessCreatedRoute)
-            sypOnInsert.mockClear()
-            sypOnInsert.mockRestore()
             sypOnLike.mockClear()
             sypOnLike.mockRestore()
         })
@@ -140,10 +136,20 @@ describe("Config Routes Dynamic Service", () => {
 
     describe("updateRoute", () => {
         it("should return sucess in update item", async () => {
+            const sypOnFindAllEmpty = jest.spyOn(RouteRepository.prototype, "findByLike").mockReturnValue(Promise.resolve([]))
             const data = await configRoutesDynamicService.updateRoute("8", {
                 path: "teste"
             })
             expect(data).toMatchObject(configRoutesDynamicServiceMOCK.mockSuccessUpdateItem)
+            sypOnFindAllEmpty.mockClear()
+            sypOnFindAllEmpty.mockRestore()
+        })
+
+        it("should return already exists route in update item", async () => {
+            const data = await configRoutesDynamicService.updateRoute("8", {
+                path: "teste"
+            })
+            expect(data).toMatchObject(configRoutesDynamicServiceMOCK.mockErrorInUpdateItem)
         })
     })
 
