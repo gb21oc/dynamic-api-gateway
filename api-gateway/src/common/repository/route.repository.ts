@@ -23,6 +23,12 @@ export class RouteRepository{
         return await this.repository.delete({id: id})
     }
 
+    async findByLike(obj: Partial<RouteEntity>){
+        return await this.repository.find({
+            where: obj
+        })
+    }
+
     async findByPathAndMethodLikeMicroService(path: string, method: IConfigRoutesDynamic.METHOD, ms: string){
         return await this.repository.find({
             where: {
