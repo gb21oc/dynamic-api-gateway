@@ -5,10 +5,10 @@ import { validate } from "class-validator";
 import { IMicroService } from "../interface/microService.interface";
 import { firstValueFrom, timeout } from "rxjs";
 import { HandlingException } from "../helpers/handlingException.helper";
-import { Router } from "express";
+import { RouteEntity } from "../../entity/route.entity";
 
 export class ServiceShared{
-    private _routeDynamic: Router;
+    private _routesDeleted: string[] = [];
     private readonly handlingExecption = new HandlingException();
     private static _instance: ServiceShared;
 
@@ -22,12 +22,12 @@ export class ServiceShared{
         ServiceShared._instance = this;
     }
 
-    set routeDynamic(route: Router){
-        this._routeDynamic = route
+    set routesDeleted(path: string){
+        this._routesDeleted.push(path)
     }
 
-    get routeDynamic(){
-        return this._routeDynamic
+    get routesDeleted(): string[]{
+        return this._routesDeleted
     }
 
     /* public static getInstance(): ServiceShared
@@ -45,6 +45,25 @@ export class ServiceShared{
                 })
             }
         })
+    }
+
+    verifyUpdateInRoutes(routesInDb: RouteEntity[]){
+        const min = 1
+        const myDate = new Date()
+        const routesNotUpdateInGateway = routesInDb.map(v => {
+            if(v.updateAT){
+                const [dateRoute, timeRoute] = v.updateAT.split(', ');
+                const [day, month, year] = dateRoute.split('/');
+                const [hours, minutes, seconds] = timeRoute.split(':');
+                const dateRouteParse = new Date(Number(year), (Number(month) - 1), Number(day), Number(hours), Number(minutes), Number(seconds));
+                myDate.setMinutes(myDate.getMinutes() - min)
+                const diff = myDate.getTime() - dateRouteParse.getTime()
+                if(Math.round(diff / 60000) <= 5){
+                    return v
+                }
+            }
+        }).filter(Boolean)
+        return routesNotUpdateInGateway
     }
 
     consoleLogColor(text?: string, path?: string, method?: string, controller?: string){

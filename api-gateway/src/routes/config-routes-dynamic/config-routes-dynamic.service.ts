@@ -134,6 +134,7 @@ export class ConfigRoutesDynamicService{
         if(data.length == 1){
             const isDeleted = await this.repository.deleteById(Number(id))
             if(isDeleted.affected === 1){
+                this.serviceShared.routesDeleted = data[0].path
                 return {
                     statusCode: 200,
                     message: "The route will be deleted in 5 minutes",
@@ -162,8 +163,9 @@ export class ConfigRoutesDynamicService{
         if(payload?.micro_service) payload.micro_service = JSON.stringify(payload.micro_service)
         const actualData = await this.repository.findById(Number(id))
         if(actualData.length === 0) return this.responseJSON.errorRouteNotFound
+        payload.updateAT = new Date().toLocaleString()
         const newActualData = Object.assign(actualData[0], payload)
-        if(actualData.length === 1 && Object.keys(payload).length > 0 && Object.keys(newActualData).length === 7){
+        if(actualData.length === 1 && Object.keys(payload).length > 0 && Object.keys(newActualData).length === 8){
             const isUpdate = await this.repository.updateById(Number(id), newActualData)
             return isUpdate? this.responseJSON.successExecution: {
                 statusCode: 400,
