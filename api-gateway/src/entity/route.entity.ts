@@ -39,4 +39,9 @@ export class RouteEntity{
         type: "enum"
     })
     isBody: "0" | "1"
+
+    @Column({
+        default: "",
+    })
+    updateAT?: string
 }

@@ -47,6 +47,7 @@ export class RouteRepository{
         entity.queryParameters = JSON.stringify(payload?.queryParameters? payload?.queryParameters: {})
         entity.parameters = JSON.stringify(payload?.parameters? payload?.parameters: {})
         entity.isBody = payload.isBody
+        entity.updateAT = undefined
         return await this.repository.save(entity)
     }
 
